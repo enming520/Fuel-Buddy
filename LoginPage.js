@@ -9,8 +9,11 @@ import { theme } from './core/theme';
 import { emailValidator } from './valids/emailValidator';
 import { passwordValidator } from './valids/passwordValidator';
 import axios from 'axios';
+import config from './config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckBox } from 'react-native-elements';
+import { useContext } from 'react';
+import UserContext from './UserContext';
 
 
 
@@ -19,6 +22,8 @@ export default function LoginPage({ navigation }) {
   const [password, setPassword] = useState({ value: '', error: '' })
   const [rememberMe, setRememberMe] = useState(false);
   const logo = require('./assets/LOGO.jpg');
+  const { setUser } = useContext(UserContext);
+  const { baseURL } = config;
 
 
   // Remember me check box 
@@ -29,7 +34,7 @@ export default function LoginPage({ navigation }) {
   // Login function that send the data to the backend server
   const authenticateUser = async (email, password) => {
     try {
-      const response = await axios.post('http://192.168.8.106:4000/login', {
+      const response = await axios.post(`${baseURL}/login`, {
         email,
         password,
       });
@@ -56,16 +61,17 @@ export default function LoginPage({ navigation }) {
       return;
     }
 
-    const { success, message, user } = await authenticateUser(email.value, password.value);
-    if (success) {
+    const result = await authenticateUser(email.value, password.value);
+    if (result.success) {
       // Authentication was successful, store the token, and navigate to the Dashboard
+      setUser(result.user);
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Dashboard', params: { user } }],
+        routes: [{ name: 'Dashboard', params: { user: result.user } }],
       });
     } else {
       // Handle authentication error
-      Alert.alert('Authentication Error', message);
+      Alert.alert('Authentication Error', result.message);
     }
 
     // Remember me function
@@ -96,7 +102,7 @@ export default function LoginPage({ navigation }) {
     <Background>
  
       <Image source={logo} style={styles.logo} />
-      <Header>Welcome to FuelBuddy!</Header>
+      <Header style={styles.header}>Start Saving on Fuel with FuelBuddy!</Header>
       <TextInput
         label="Email"
         returnKeyType="next"
@@ -192,4 +198,13 @@ const styles = StyleSheet.create({
   checkboxTitle: {
     color: theme.colors.text,
   },
+  header: {
+    fontSize: 22, // Reduce the font size to fit the header in one line
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#fec619',
+    marginBottom: 10,
+    paddingHorizontal: 20, // Add some horizontal padding
+    maxWidth: '90%', // Limit the width of the header
+  }
 })

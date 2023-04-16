@@ -3,19 +3,25 @@ import { Button, StatusBar, StyleSheet, Text, View, TextInput, Alert, Dimensions
 import Modal from "react-native-modal";
 import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
+import config from '../config';
 import { ToastAndroid } from 'react-native';
+import { useContext } from 'react';
+import UserContext from '../UserContext';
+import { useNavigation } from '@react-navigation/native';
 
-
-export const PriceModal1 = ({ visible, onClose }) => {
+const { baseURL } = config;
+export const PriceModal1 = ({ loggedIn, visible, onClose }) => {
   // Price input within the Circle K modal. 
   const [modalVisible2, setModalVisible2] = useState(false);
   const [petrolPrice, setPetrolPrice] = useState();
   const [dieselPrice, setDieselPrice] = useState();
   const [prices, setPrices] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices')
+    axios.get(`${baseURL}/prices`)
       .then(response => {
         setPrices(response.data);
       })
@@ -25,7 +31,7 @@ export const PriceModal1 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit = () => {
-    axios.post('http://192.168.8.106:4000/prices', { petrolPrice, dieselPrice })
+    axios.post(`${baseURL}/prices`, { petrolPrice, dieselPrice })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -75,13 +81,23 @@ export const PriceModal1 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible2(true);
-                onClose(false);
-
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible2(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -139,10 +155,12 @@ export const PriceModal2 = ({ visible, onClose }) => {
   const [petrolPrice3, setPetrolPrice3] = useState();
   const [dieselPrice3, setDieselPrice3] = useState();
   const [prices3, setPrices3] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices3')
+    axios.get(`${baseURL}/prices3`)
       .then(response => {
         setPrices3(response.data);
       })
@@ -152,7 +170,7 @@ export const PriceModal2 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit3 = () => {
-    axios.post('http://192.168.8.106:4000/prices3', { petrolPrice3, dieselPrice3 })
+    axios.post(`${baseURL}/prices3`, { petrolPrice3, dieselPrice3 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -200,12 +218,23 @@ export const PriceModal2 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible3(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible3(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -265,10 +294,12 @@ export const PriceModal3 = ({ visible, onClose }) => {
   const [petrolPrice4, setPetrolPrice4] = useState();
   const [dieselPrice4, setDieselPrice4] = useState();
   const [prices4, setPrices4] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices4')
+    axios.get(`${baseURL}/prices4`)
       .then(response => {
         setPrices4(response.data);
       })
@@ -278,7 +309,7 @@ export const PriceModal3 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit4 = () => {
-    axios.post('http://192.168.8.106:4000/prices4', { petrolPrice4, dieselPrice4 })
+    axios.post(`${baseURL}/prices4`, { petrolPrice4, dieselPrice4 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -324,13 +355,23 @@ export const PriceModal3 = ({ visible, onClose }) => {
             )}
           </View>
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible4(true);
-                onClose(false);
-
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible4(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -390,10 +431,12 @@ export const PriceModal4 = ({ visible, onClose }) => {
   const [petrolPrice5, setPetrolPrice5] = useState();
   const [dieselPrice5, setDieselPrice5] = useState();
   const [prices5, setPrices5] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices5')
+    axios.get(`${baseURL}/prices5`)
       .then(response => {
         setPrices5(response.data);
       })
@@ -403,7 +446,7 @@ export const PriceModal4 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit5 = () => {
-    axios.post('http://192.168.8.106:4000/prices5', { petrolPrice5, dieselPrice5 })
+    axios.post(`${baseURL}/prices5`, { petrolPrice5, dieselPrice5 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -450,12 +493,23 @@ export const PriceModal4 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible5(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible5(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -514,10 +568,12 @@ export const PriceModal5 = ({ visible, onClose }) => {
   const [petrolPrice6, setPetrolPrice6] = useState();
   const [dieselPrice6, setDieselPrice6] = useState();
   const [prices6, setPrices6] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices6')
+    axios.get(`${baseURL}/prices6`)
       .then(response => {
         setPrices6(response.data);
       })
@@ -527,7 +583,7 @@ export const PriceModal5 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit6 = () => {
-    axios.post('http://192.168.8.106:4000/prices6', { petrolPrice6, dieselPrice6 })
+    axios.post(`${baseURL}/prices6`, { petrolPrice6, dieselPrice6 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -574,12 +630,23 @@ export const PriceModal5 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible6(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible6(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -638,10 +705,12 @@ export const PriceModal6 = ({ visible, onClose }) => {
   const [petrolPrice7, setPetrolPrice7] = useState();
   const [dieselPrice7, setDieselPrice7] = useState();
   const [prices7, setPrices7] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices7')
+    axios.get(`${baseURL}/prices7`)
       .then(response => {
         setPrices7(response.data);
       })
@@ -651,7 +720,7 @@ export const PriceModal6 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit7 = () => {
-    axios.post('http://192.168.8.106:4000/prices7', { petrolPrice7, dieselPrice7 })
+    axios.post(`${baseURL}/prices7`, { petrolPrice7, dieselPrice7 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -698,12 +767,23 @@ export const PriceModal6 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible7(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible7(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -762,11 +842,13 @@ export const PriceModal7 = ({ visible, onClose }) => {
   const [petrolPrice8, setPetrolPrice8] = useState();
   const [dieselPrice8, setDieselPrice8] = useState();
   const [prices8, setPrices8] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices8')
+    axios.get(`${baseURL}/prices8`)
       .then(response => {
         setPrices8(response.data);
       })
@@ -776,7 +858,7 @@ export const PriceModal7 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit8 = () => {
-    axios.post('http://192.168.8.106:4000/prices8', { petrolPrice8, dieselPrice8 })
+    axios.post(`${baseURL}/prices8`, { petrolPrice8, dieselPrice8 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -792,7 +874,7 @@ export const PriceModal7 = ({ visible, onClose }) => {
   return (
     <View>
       {/* Modal for Modal Inver*/}
-      <Modal  
+      <Modal
         transparent={true}
         onBackdropPress={() => onClose(false)}
         onBackButtonPress={() => onClose(false)}
@@ -823,12 +905,23 @@ export const PriceModal7 = ({ visible, onClose }) => {
             )}
           </View>
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible8(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible8(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -888,10 +981,12 @@ export const PriceModal8 = ({ visible, onClose }) => {
   const [petrolPrice9, setPetrolPrice9] = useState();
   const [dieselPrice9, setDieselPrice9] = useState();
   const [prices9, setPrices9] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices9')
+    axios.get(`${baseURL}/prices9`)
       .then(response => {
         setPrices9(response.data);
       })
@@ -901,7 +996,7 @@ export const PriceModal8 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit9 = () => {
-    axios.post('http://192.168.8.106:4000/prices9', { petrolPrice9, dieselPrice9 })
+    axios.post(`${baseURL}/prices9`, { petrolPrice9, dieselPrice9 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -949,12 +1044,23 @@ export const PriceModal8 = ({ visible, onClose }) => {
 
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible9(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible9(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1013,10 +1119,12 @@ export const PriceModal9 = ({ visible, onClose }) => {
   const [petrolPrice10, setPetrolPrice10] = useState();
   const [dieselPrice10, setDieselPrice10] = useState();
   const [prices10, setPrices10] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices10')
+    axios.get(`${baseURL}/prices10`)
       .then(response => {
         setPrices10(response.data);
       })
@@ -1026,7 +1134,7 @@ export const PriceModal9 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit10 = () => {
-    axios.post('http://192.168.8.106:4000/prices10', { petrolPrice10, dieselPrice10 })
+    axios.post(`${baseURL}/prices10`, { petrolPrice10, dieselPrice10 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1072,12 +1180,23 @@ export const PriceModal9 = ({ visible, onClose }) => {
             )}
           </View>
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible10(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible10(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1136,10 +1255,12 @@ export const PriceModal10 = ({ visible, onClose }) => {
   const [petrolPrice11, setPetrolPrice11] = useState();
   const [dieselPrice11, setDieselPrice11] = useState();
   const [prices11, setPrices11] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices11')
+    axios.get(`${baseURL}/prices11`)
       .then(response => {
         setPrices11(response.data);
       })
@@ -1149,7 +1270,7 @@ export const PriceModal10 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit11 = () => {
-    axios.post('http://192.168.8.106:4000/prices11', { petrolPrice11, dieselPrice11 })
+    axios.post(`${baseURL}/prices11`, { petrolPrice11, dieselPrice11 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1197,12 +1318,23 @@ export const PriceModal10 = ({ visible, onClose }) => {
 
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible11(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible11(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1261,10 +1393,12 @@ export const PriceModal11 = ({ visible, onClose }) => {
   const [petrolPrice12, setPetrolPrice12] = useState();
   const [dieselPrice12, setDieselPrice12] = useState();
   const [prices12, setPrices12] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices12')
+    axios.get(`${baseURL}/prices12`)
       .then(response => {
         setPrices12(response.data);
       })
@@ -1274,7 +1408,7 @@ export const PriceModal11 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit12 = () => {
-    axios.post('http://192.168.8.106:4000/prices12', { petrolPrice12, dieselPrice12 })
+    axios.post(`${baseURL}/prices12`, { petrolPrice12, dieselPrice12 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1322,12 +1456,23 @@ export const PriceModal11 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible12(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible12(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1386,10 +1531,12 @@ export const PriceModal12 = ({ visible, onClose }) => {
   const [petrolPrice13, setPetrolPrice13] = useState();
   const [dieselPrice13, setDieselPrice13] = useState();
   const [prices13, setPrices13] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices13')
+    axios.get(`${baseURL}/prices13`)
       .then(response => {
         setPrices13(response.data);
       })
@@ -1399,7 +1546,7 @@ export const PriceModal12 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit13 = () => {
-    axios.post('http://192.168.8.106:4000/prices13', { petrolPrice13, dieselPrice13 })
+    axios.post(`${baseURL}/prices13`, { petrolPrice13, dieselPrice13 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1446,12 +1593,23 @@ export const PriceModal12 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible13(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible13(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1510,10 +1668,12 @@ export const PriceModal13 = ({ visible, onClose }) => {
   const [petrolPrice14, setPetrolPrice14] = useState();
   const [dieselPrice14, setDieselPrice14] = useState();
   const [prices14, setPrices14] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices14')
+    axios.get(`${baseURL}/prices14`)
       .then(response => {
         setPrices14(response.data);
       })
@@ -1523,7 +1683,7 @@ export const PriceModal13 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit14 = () => {
-    axios.post('http://192.168.8.106:4000/prices14', { petrolPrice14, dieselPrice14 })
+    axios.post(`${baseURL}/prices14`, { petrolPrice14, dieselPrice14 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1570,12 +1730,23 @@ export const PriceModal13 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible14(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible14(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1634,10 +1805,12 @@ export const PriceModal14 = ({ visible, onClose }) => {
   const [petrolPrice15, setPetrolPrice15] = useState();
   const [dieselPrice15, setDieselPrice15] = useState();
   const [prices15, setPrices15] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices15')
+    axios.get(`${baseURL}/prices15`)
       .then(response => {
         setPrices15(response.data);
       })
@@ -1647,7 +1820,7 @@ export const PriceModal14 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit15 = () => {
-    axios.post('http://192.168.8.106:4000/prices15', { petrolPrice15, dieselPrice15 })
+    axios.post(`${baseURL}/prices15`, { petrolPrice15, dieselPrice15 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1695,12 +1868,23 @@ export const PriceModal14 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible15(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible15(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1759,10 +1943,12 @@ export const PriceModal15 = ({ visible, onClose }) => {
   const [petrolPrice16, setPetrolPrice16] = useState();
   const [dieselPrice16, setDieselPrice16] = useState();
   const [prices16, setPrices16] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices16')
+    axios.get(`${baseURL}/prices16`)
       .then(response => {
         setPrices16(response.data);
       })
@@ -1772,7 +1958,7 @@ export const PriceModal15 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit16 = () => {
-    axios.post('http://192.168.8.106:4000/prices16', { petrolPrice16, dieselPrice16 })
+    axios.post(`${baseURL}/prices16`, { petrolPrice16, dieselPrice16 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1819,12 +2005,23 @@ export const PriceModal15 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible16(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible16(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -1883,10 +2080,12 @@ export const PriceModal16 = ({ visible, onClose }) => {
   const [petrolPrice17, setPetrolPrice17] = useState();
   const [dieselPrice17, setDieselPrice17] = useState();
   const [prices17, setPrices17] = useState([]);
+  const { user, setUser } = useContext(UserContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     // Fetch the current petrol and diesel prices from the server when the component mounts
-    axios.get('http://192.168.8.106:4000/prices17')
+    axios.get(`${baseURL}/prices17`)
       .then(response => {
         setPrices17(response.data);
       })
@@ -1896,7 +2095,7 @@ export const PriceModal16 = ({ visible, onClose }) => {
   }, []);
 
   const handleSubmit17 = () => {
-    axios.post('http://192.168.8.106:4000/prices17', { petrolPrice17, dieselPrice17 })
+    axios.post(`${baseURL}/prices17`, { petrolPrice17, dieselPrice17 })
       .then(response => {
         console.log(response.data);
         // update the serverData state variable with the new data
@@ -1942,12 +2141,23 @@ export const PriceModal16 = ({ visible, onClose }) => {
           </View>
 
           <View style={styles.button}>
-            <Button
-              title="Update Price"
-              onPress={() => {
-                setModalVisible17(true);
-                onClose(false);
-              }} />
+            {user ? (
+              <Button
+                title="Update Price"
+                onPress={() => {
+                  setModalVisible17(true);
+                  onClose(false);
+                }}
+              />
+            ) : (
+              <Button
+                title="Log In"
+                onPress={() => {
+                  navigation.navigate('Profile', { screen: 'LoginPage' });
+                  onClose(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -2026,8 +2236,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   title: {
-      fontSize: 24,
-      fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: 'bold',
     position: 'absolute',
     top: 20,
     right: 20,

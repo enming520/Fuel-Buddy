@@ -3,7 +3,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import { Button, StatusBar, StyleSheet, Text, View, TextInput, Alert } from "react-native";
 import { Marker, Callout, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import {
   PriceModal1,
   PriceModal2,
@@ -23,12 +23,13 @@ import {
   PriceModal16
 } from './components/PriceModals';
 import haversine from 'haversine';
+import { Accuracy } from 'expo-location';
+import DistanceContext from './DistanceContext';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-
-
-
-export default function Home() {
+export default function Home({ route }) {
   const [pin, setPin] = useState({
     latitude: 53.2745,
     longitude: -9.049,
@@ -41,11 +42,27 @@ export default function Home() {
     longitudeDelta: 0.0005,
   });
 
-const mapRef = useRef(null);
+  const mapRef = useRef(null);
+
+  // Add the selectedStation state (link to List.js)
+  const [selectedStation, setSelectedStation] = useState(null);
+  const { range, setRange } = useContext(DistanceContext);
+
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchStoredDistance = async () => {
+        const storedDistance = await AsyncStorage.getItem('selectedDistance');
+        if (storedDistance) {
+          setRange(storedDistance);
+        }
+      };
+      fetchStoredDistance();
+    }, [])
+  );
 
   // get the current location from user by using GPS
-
-    useEffect(() => {
+  useEffect(() => {
     (async () => {
 
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -245,12 +262,75 @@ const mapRef = useRef(null);
     const distance = calculateDistance(userCoord, markerCoord);
     return distance <= range;
   }
-  
-  
+
+  // continue Update users current location
+  useEffect(() => {
+    let unsubscribe;
+
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      unsubscribe = await Location.watchPositionAsync(
+        {
+          accuracy: Accuracy.High,
+          timeInterval: 1000, // Update every 1 second
+          distanceInterval: 50, // Update every 10 meters
+        },
+        (location) => {
+          setPin({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          });
+          if (mapRef.current) {
+            mapRef.current.animateToRegion(
+              {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.0005,
+              },
+              1000
+            );
+          }
+        }
+      );
+    })();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe.remove();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // If there's a station object passed from the List screen, update the selectedStation state
+    if (route.params?.station) {
+      setSelectedStation(route.params.station);
+    }
+
+    if (selectedStation) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: selectedStation.latitude,
+          longitude: selectedStation.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.0005,
+        },
+        1000
+      );
+    }
+  }, [route.params?.station, selectedStation]);
+
+
   return (
     <View style={styles.container}>
       <MapView
-      ref={mapRef}
+        ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={region}
@@ -288,486 +368,486 @@ const mapRef = useRef(null);
 
         {/* Circle K Petrol station */}
 
-        {
-        isMarkerInRange(pin, { latitude: 53.29006252755299, longitude: -9.006691917024554 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.29006252755299,
-            longitude: -9.006691917024554,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K"
-        >
-          <Callout tooltip onPress={openPriceModal1}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Circle K</Text>
-                <Text style={styles.info}>Open 24 hours</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+
+        {isMarkerInRange(pin, { latitude: 53.29006252755299, longitude: -9.006691917024554}, range) && (
+          <Marker
+            coordinate={{
+              latitude: 53.29006252755299,
+              longitude:  -9.006691917024554,
+            }}
+            image={require('./assets/1station.png')}
+            title="Circle K"
+          >
+            <Callout tooltip onPress={openPriceModal1}>
+              <View>
+                <View style={styles.bubble}>
+                  <Text style={styles.name}>Circle K</Text>
+                  <Text style={styles.info}>Open 24 hours</Text>
+                  <Text></Text>
+                  <Text style={styles.tapDetails}>Tap for more details</Text>
                 </View>
+                <View style={styles.arrowBorder}>
+                  <View style={styles.arrow}>
+                  </View>
+                </View>
+                <PriceModal1 visible={priceModal1Visible} onClose={closePriceModal1} />
               </View>
-              <PriceModal1 visible={priceModal1Visible} onClose={closePriceModal1} />
-            </View>
-          </Callout>
-        </Marker>
+            </Callout>
+          </Marker>
         )
-      }
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.282121, longitude: -9.038721 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.282121,
-            longitude: -9.038721,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal8}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Circle K</Text>
-                <Text style={styles.info}>Open 24 hours</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.282121, longitude: -9.038721 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.282121,
+                longitude: -9.038721,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal8}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Circle K</Text>
+                    <Text style={styles.info}>Open 24 hours</Text>
+                    <Text></Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal8 visible={priceModal8Visible} onClose={closePriceModal8} />
                 </View>
-              </View>
-              <PriceModal8 visible={priceModal8Visible} onClose={closePriceModal8} />
-            </View>
-          </Callout>
-        </Marker>
-                )
-              }
+              </Callout>
+            </Marker>
+          )
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.277263, longitude: -9.072086 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.277263,
-            longitude: -9.072086,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal9}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Circle K</Text>
-                <Text style={styles.info}>Open: 7AM - 23PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.277263, longitude: -9.072086 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.277263,
+                longitude: -9.072086,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal9}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Circle K</Text>
+                    <Text style={styles.info}>Open: 7AM - 23PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal9 visible={priceModal9Visible} onClose={closePriceModal9} />
                 </View>
-              </View>
-              <PriceModal9 visible={priceModal9Visible} onClose={closePriceModal9} />
-            </View>
-          </Callout>
-        </Marker>
-               )
-              }
+              </Callout>
+            </Marker>
+          )
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.281436, longitude: -9.034798 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.281436,
-            longitude: -9.034798,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal10}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Circle K College Rd</Text>
-                <Text style={styles.info}>Open: 7AM - 23PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.281436, longitude: -9.034798 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.281436,
+                longitude: -9.034798,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal10}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Circle K College Rd</Text>
+                    <Text style={styles.info}>Open: 7AM - 23PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal10 visible={priceModal10Visible} onClose={closePriceModal10} />
                 </View>
-              </View>
-              <PriceModal10 visible={priceModal10Visible} onClose={closePriceModal10} />
-            </View>
-          </Callout>
-        </Marker>
-                       )
-                      }
+              </Callout>
+            </Marker>
+          )
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.281846, longitude: -9.064977 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.281846,
-            longitude: -9.064977,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal11}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Circle K Newcastle Rd</Text>
-                <Text style={styles.info}>Open: 7AM - 23PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.281846, longitude: -9.064977 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.281846,
+                longitude: -9.064977,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal11}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Circle K Newcastle Rd</Text>
+                    <Text style={styles.info}>Open: 7AM - 23PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal11 visible={priceModal11Visible} onClose={closePriceModal11} />
                 </View>
-              </View>
-              <PriceModal11 visible={priceModal11Visible} onClose={closePriceModal11} />
-            </View>
-          </Callout>
-        </Marker>
-                               )
-                              }
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* Circle K Petrol station */}
 
         {/* Topaz Petrol station */}
         {
-        isMarkerInRange(pin, { latitude: 53.29214920867234, longitude: -9.018907699375454 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.29214920867234,
-            longitude: -9.018907699375454,
-          }}
-          image={require('./assets/1station.png')}
-          title="Topaz"
-        >
-          <Callout tooltip onPress={openPriceModal2}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Topaz</Text>
-                <Text style={styles.info}>Open 24 hours</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.29214920867234, longitude: -9.018907699375454 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.29214920867234,
+                longitude: -9.018907699375454,
+              }}
+              image={require('./assets/1station.png')}
+              title="Topaz"
+            >
+              <Callout tooltip onPress={openPriceModal2}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Topaz</Text>
+                    <Text style={styles.info}>Open 24 hours</Text>
+                    <Text></Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal2 visible={priceModal2Visible} onClose={closePriceModal2} />
                 </View>
-              </View>
-              <PriceModal2 visible={priceModal2Visible} onClose={closePriceModal2} />
-            </View>
-          </Callout>
-        </Marker>
-                                       )
-                                      }
-        
+              </Callout>
+            </Marker>
+          )
+        }
+
 
         {/* Topaz Petrol station */}
 
         {/* Applegreen Petrol station */}
         {
-        isMarkerInRange(pin, { latitude: 53.287045472896565, longitude: -9.030814413286762 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.287045472896565,
-            longitude: -9.030814413286762,
-          }}
-          image={require('./assets/1station.png')}
-          title="Applegreen"
-        >
-          <Callout tooltip onPress={openPriceModal3}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Applegreen</Text>
-                <Text style={styles.info}>Open 24 hours</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.287045472896565, longitude: -9.030814413286762 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.287045472896565,
+                longitude: -9.030814413286762,
+              }}
+              image={require('./assets/1station.png')}
+              title="Applegreen"
+            >
+              <Callout tooltip onPress={openPriceModal3}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Applegreen</Text>
+                    <Text style={styles.info}>Open 24 hours</Text>
+                    <Text></Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal3 visible={priceModal3Visible} onClose={closePriceModal3} />
                 </View>
-              </View>
-              <PriceModal3 visible={priceModal3Visible} onClose={closePriceModal3} />
-            </View>
-          </Callout>
-        </Marker>
-                   )
-                  }
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* Applegreen Petrol station */}
 
         {/* Top Oil Petrol station */}
         {
-        isMarkerInRange(pin, { latitude: 53.29015418980305, longitude: -9.020806677417307 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.29015418980305,
-            longitude: -9.020806677417307,
-          }}
-          image={require('./assets/1station.png')}
-          title="Top Oil"
-        >
-          <Callout tooltip onPress={openPriceModal4}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Top Oil</Text>
-                <Text style={styles.info}>Open: 6am - 9pm</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.29015418980305, longitude: -9.020806677417307 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.29015418980305,
+                longitude: -9.020806677417307,
+              }}
+              image={require('./assets/1station.png')}
+              title="Top Oil"
+            >
+              <Callout tooltip onPress={openPriceModal4}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Top Oil</Text>
+                    <Text style={styles.info}>Open: 6am - 9pm</Text>
+                    <Text></Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal4 visible={priceModal4Visible} onClose={closePriceModal4} />
                 </View>
-              </View>
-              <PriceModal4 visible={priceModal4Visible} onClose={closePriceModal4} />
-            </View>
-          </Callout>
-        </Marker>
-             )
-            }
+              </Callout>
+            </Marker>
+          )
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.258506, longitude: -9.103267 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.258506,
-            longitude: -9.103267,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal13}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Top Oil Knocknacarra</Text>
-                <Text style={styles.info}>Open: 7:30AM - 22PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.258506, longitude: -9.103267 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.258506,
+                longitude: -9.103267,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal13}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Top Oil Knocknacarra</Text>
+                    <Text style={styles.info}>Open: 7:30AM - 22PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal13 visible={priceModal13Visible} onClose={closePriceModal13} />
                 </View>
-              </View>
-              <PriceModal13 visible={priceModal13Visible} onClose={closePriceModal13} />
-            </View>
-          </Callout>
-        </Marker>
-             )
-            }
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* Top Oil Petrol station */}
 
         {/* Texaco Petrol station */}
         {
-        isMarkerInRange(pin, { latitude: 53.271367, longitude: -9.045233 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.271367,
-            longitude: -9.045233,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal5}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Texaco</Text>
-                <Text style={styles.info}>Open 24 Hours</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.271367, longitude: -9.045233 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.271367,
+                longitude: -9.045233,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal5}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Texaco</Text>
+                    <Text style={styles.info}>Open 24 Hours</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal5 visible={priceModal5Visible} onClose={closePriceModal5} />
                 </View>
-              </View>
-              <PriceModal5 visible={priceModal5Visible} onClose={closePriceModal5} />
-            </View>
-          </Callout>
-        </Marker>
-                     )
-                    }
-
-{
-        isMarkerInRange(pin, { latitude: 53.263221, longitude: -9.072033 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.263221,
-            longitude: -9.072033,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal14}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Texaco xl</Text>
-                <Text style={styles.info}>Open:7AM - 22PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
-                </View>
-              </View>
-              <PriceModal14 visible={priceModal14Visible} onClose={closePriceModal14} />
-            </View>
-          </Callout>
-        </Marker>
-           )
-          }
-
-{
-        isMarkerInRange(pin, { latitude: 53.258925, longitude: -9.129652 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.258925,
-            longitude: -9.129652,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal15}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Texaco Service Station</Text>
-                <Text style={styles.info}>Open 24 Hours</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
-                </View>
-              </View>
-              <PriceModal15 visible={priceModal15Visible} onClose={closePriceModal15} />
-            </View>
-          </Callout>
-        </Marker>
+              </Callout>
+            </Marker>
           )
         }
 
-{
-        isMarkerInRange(pin, { latitude: 53.268086, longitude: -8.929925 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.268086,
-            longitude: -8.929925,
-          }}
-          image={require('./assets/1station.png')}
-          title="Applegreen"
-        >
-          <Callout tooltip onPress={openPriceModal12}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Texaco</Text>
-                <Text style={styles.info}>Open 24 hours</Text>
-                <Text></Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.263221, longitude: -9.072033 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.263221,
+                longitude: -9.072033,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal14}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Texaco xl</Text>
+                    <Text style={styles.info}>Open:7AM - 22PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal14 visible={priceModal14Visible} onClose={closePriceModal14} />
                 </View>
-              </View>
-              <PriceModal12 visible={priceModal12Visible} onClose={closePriceModal12} />
-            </View>
-          </Callout>
-        </Marker>
-             )
-            }
+              </Callout>
+            </Marker>
+          )
+        }
+
+        {
+          isMarkerInRange(pin, { latitude: 53.258925, longitude: -9.129652 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.258925,
+                longitude: -9.129652,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal15}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Texaco Service Station</Text>
+                    <Text style={styles.info}>Open 24 Hours</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal15 visible={priceModal15Visible} onClose={closePriceModal15} />
+                </View>
+              </Callout>
+            </Marker>
+          )
+        }
+
+        {
+          isMarkerInRange(pin, { latitude: 53.268086, longitude: -8.929925 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.268086,
+                longitude: -8.929925,
+              }}
+              image={require('./assets/1station.png')}
+              title="Applegreen"
+            >
+              <Callout tooltip onPress={openPriceModal12}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Texaco</Text>
+                    <Text style={styles.info}>Open 24 hours</Text>
+                    <Text></Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal12 visible={priceModal12Visible} onClose={closePriceModal12} />
+                </View>
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* Texaco Petrol station */}
 
         {/* Maxol Petrol station */}
 
         {
-        isMarkerInRange(pin, { latitude: 53.275577, longitude: -9.076668 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.275577,
-            longitude: -9.076668,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal6}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Maxol Auto24</Text>
-                <Text style={styles.info}>Open 24 Hours</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.275577, longitude: -9.076668 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.275577,
+                longitude: -9.076668,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal6}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Maxol Auto24</Text>
+                    <Text style={styles.info}>Open 24 Hours</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal6 visible={priceModal6Visible} onClose={closePriceModal6} />
                 </View>
-              </View>
-              <PriceModal6 visible={priceModal6Visible} onClose={closePriceModal6} />
-            </View>
-          </Callout>
-        </Marker>
-           )
-          }
+              </Callout>
+            </Marker>
+          )
+        }
 
-{
-        isMarkerInRange(pin, { latitude: 53.267414, longitude: -9.066638 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.267414,
-            longitude: -9.066638,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal16}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Maxol Service Station</Text>
-                <Text style={styles.info}>Open:7AM - 21PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+        {
+          isMarkerInRange(pin, { latitude: 53.267414, longitude: -9.066638 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.267414,
+                longitude: -9.066638,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal16}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Maxol Service Station</Text>
+                    <Text style={styles.info}>Open:7AM - 21PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal16 visible={priceModal16Visible} onClose={closePriceModal16} />
                 </View>
-              </View>
-              <PriceModal16 visible={priceModal16Visible} onClose={closePriceModal16} />
-            </View>
-          </Callout>
-        </Marker>
-           )
-          }
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* Inver Petrol station */}
 
         {
-        isMarkerInRange(pin, { latitude: 53.258328, longitude: -9.101043 }) && (
-        <Marker
-          coordinate={{
-            latitude: 53.258328,
-            longitude: -9.101043,
-          }}
-          image={require('./assets/1station.png')}
-          title="Circle K Express"
-        >
-          <Callout tooltip onPress={openPriceModal7}>
-            <View>
-              <View style={styles.bubble}>
-                <Text style={styles.name}>Inver Petrol Station</Text>
-                <Text style={styles.info}>Open: 8AM - 22PM</Text>
-                <Text style={styles.tapDetails}>Tap for more details</Text>
-              </View>
-              <View style={styles.arrowBorder}>
-                <View style={styles.arrow}>
+          isMarkerInRange(pin, { latitude: 53.258328, longitude: -9.101043 }, range) && (
+            <Marker
+              coordinate={{
+                latitude: 53.258328,
+                longitude: -9.101043,
+              }}
+              image={require('./assets/1station.png')}
+              title="Circle K Express"
+            >
+              <Callout tooltip onPress={openPriceModal7}>
+                <View>
+                  <View style={styles.bubble}>
+                    <Text style={styles.name}>Inver Petrol Station</Text>
+                    <Text style={styles.info}>Open: 8AM - 22PM</Text>
+                    <Text style={styles.tapDetails}>Tap for more details</Text>
+                  </View>
+                  <View style={styles.arrowBorder}>
+                    <View style={styles.arrow}>
+                    </View>
+                  </View>
+                  <PriceModal7 visible={priceModal7Visible} onClose={closePriceModal7} />
                 </View>
-              </View>
-              <PriceModal7 visible={priceModal7Visible} onClose={closePriceModal7} />
-            </View>
-          </Callout>
-        </Marker>
-           )
-          }
+              </Callout>
+            </Marker>
+          )
+        }
 
         {/* All the petrol stations location in Galway */}
 
         <MapView.Circle
           center={pin}
-          radius={1500}
+          radius={Number(range)}
           fillColor={'rgba(102, 179, 255, 0.5)'}
-          strokeWidth={.6}
+          strokeWidth={0.6}
         />
 
       </MapView>
@@ -849,10 +929,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#3498db',
-  },
-  // Style for Circle
-  circle: {
-
   },
 });
 

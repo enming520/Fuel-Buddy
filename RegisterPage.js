@@ -2,19 +2,16 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ToastAndroid } from 'react-native';
 import { Text } from 'react-native-paper';
 import Background from './components/Background';
-import Logo from './components/Logo';
 import Header from './components/Header';
 import Button from './components/Button';
 import TextInput from './components/TextInput';
-import BackButton from './components/BackButton';
 import { theme } from './core/theme';
 import { emailValidator } from './valids/emailValidator';
 import { passwordValidator } from './valids/passwordValidator';
 import { nameValidator } from './valids/nameValidator';
 import { confirmPasswordValidator } from './valids/confirmPasswordValidator';
-
-
 import axios from 'axios';
+import config from './config';
 
 
 export default function RegisterPage({ navigation }) {
@@ -22,6 +19,7 @@ export default function RegisterPage({ navigation }) {
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
   const [confirmPassword, setConfirmPassword] = useState({ value: '', error: '' });
+  const { baseURL } = config;
 
 
   const onSignUpPressed = async () => {
@@ -55,7 +53,7 @@ export default function RegisterPage({ navigation }) {
 // Link to back-end server.
 const registerUser = async (name, email, password) => {
   try {
-    const response = await axios.post('http://192.168.8.106:4000/register', {
+    const response = await axios.post(`${baseURL}/register`, {
       name,
       email,
       password,

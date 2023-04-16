@@ -12,10 +12,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-// Serve the static files from the React app
-// const path = require('path');
-// app.use(express.static(path.join(__dirname, '../build')));
-// app.use('/static', express.static(path.join(__dirname, 'build//static')));
 
 // allow server to access to different port
 const cors = require('cors');
